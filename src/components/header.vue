@@ -12,7 +12,6 @@
     <div class="flex items-center space-x-4">
       <!-- Botones para pantallas grandes (ocultos en móviles) -->
       <div class="hidden md:flex items-center space-x-4">
-        <button @click="goToregister" class="bg-secondary hover:bg-gray-400 text-black font-satobold py-2 px-4 rounded-md transition-colors duration-200">Sign in like admin</button>
         <button
           class="bg-primary hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200"
           @click="goToLogin"
@@ -31,9 +30,7 @@
         </button>
         <!-- Menu desplegable -->
         <div v-if="isOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-          <a href="/register" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Sign in like admin</a>
           <a @click.prevent="goToLogin" href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Log in</a>
-          
         </div>
       </div>
     </div>
