@@ -35,21 +35,6 @@ const viewAllApis = () => {
           <h2 class="text-5xl font-bold text-gray-800 mb-2">12.345</h2>
           <p class="text-gray-600">Total API</p>
         </div>
-        
-        <div class="bg-white p-6 rounded-lg border border-2 ">
-          <h2 class="text-5xl font-bold text-gray-800 mb-2">1,234</h2>
-          <p class="text-gray-600">Active Users</p>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg border border-2 ">
-          <h2 class="text-5xl font-bold text-gray-800 mb-2">5,432</h2>
-          <p class="text-gray-600">Requests Today</p>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg border border-2 ">
-          <h2 class="text-5xl font-bold text-gray-800 mb-2">98%</h2>
-          <p class="text-gray-600">Uptime</p>
-        </div>
       </section>
 
 
