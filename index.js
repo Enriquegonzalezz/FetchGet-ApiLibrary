@@ -10,8 +10,8 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, 'dist')));
 
-const spaRoutes = ['/login', '/admin/dashboard', '/apis', '/apis/:id', '/admin/createapis'];
-spaRoutes.forEach(route => {
+const vueRoutes = ['/login', '/admin/dashboard', '/apis', '/apis/:id', '/admin/createapis'];
+vueRoutes.forEach(route => {
   app.get(route, (req, res) => {
     res.sendFile(path.join(__dirname, 'dist/index.html'));
   });
