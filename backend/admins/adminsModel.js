@@ -1,6 +1,6 @@
-import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 import createConnection from '../connection.js';
 
 class AdminsModel {
@@ -9,7 +9,7 @@ class AdminsModel {
             password,
             email
         } = admin;
-        const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);
+        const hashedPassword = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
 
         let connection;
         try {
@@ -51,7 +51,7 @@ class AdminsModel {
 
             const token = jwt.sign(
                 { username: user.username, email: user.email },
-                SECRET_JWT_KEY,
+                process.env.SECRET_JWT_KEY,
                 {
                     expiresIn: "1h"
                 }
@@ -71,12 +71,37 @@ class AdminsModel {
     }
 
     static async verifyToken({ token }) {
-        return jwt.verify(token, SECRET_JWT_KEY, (err) => {
+        return jwt.verify(token, process.env.SECRET_JWT_KEY, (err) => {
             if (err) {
                 return { valid: false };
             }
             return { valid: true };
         });
+    }
+
+    static async createTable() {
+        let connection;
+        try {
+            const hashedPassword = bcrypt.hashSync('adminadmmin', Number(process.env.SALT_ROUNDS));
+            connection = await createConnection();
+            const createTableQuery = `
+                CREATE TABLE IF NOT EXISTS admins (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    email VARCHAR(500) NOT NULL UNIQUE,
+                    password VARCHAR(500) NOT NULL
+                );
+            `;
+            const insertAdminQuery = `INSERT IGNORE INTO admins (email, password) VALUES ('admin@admin.com', '${hashedPassword}');`
+            await connection.execute(createTableQuery);
+            await connection.execute(insertAdminQuery);
+            console.log("Tabla 'admins' creada o ya existe.");
+        } catch (error) {
+            console.error(`Error al crear la tabla 'admins': ${error.message}`);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
     }
 }
 
