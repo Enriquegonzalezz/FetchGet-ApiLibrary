@@ -4,8 +4,16 @@
       <div class="text-xl font-bold text-gray-800"><img src="/fetchlogo.svg" alt=""></div>
       <nav class="space-x-6 text-gray-600 hidden md:flex">
         <a href="/apis" class="hover:text-primary transition-colors duration-200 font-bold">Home</a>
-        <a href="/admin/dashboard" class="hover:text-primary transition-colors duration-200 font-bold">Dashboard</a>
-        <a href="/admin/createapis" class="hover:text-primary transition-colors duration-200 font-bold">Create Api</a>
+        <a
+          v-if="isAuthenticated"
+          href="/admin/dashboard"
+          class="hover:text-primary transition-colors duration-200 font-bold"
+        >Dashboard</a>
+        <a
+          v-if="isAuthenticated"
+          href="/admin/createapis"
+          class="hover:text-primary transition-colors duration-200 font-bold"
+        >Create Api</a>
       </nav>
     </div>
 
@@ -13,18 +21,20 @@
       <!-- Botones para pantallas grandes (ocultos en móviles) -->
       <div class="hidden md:flex items-center space-x-4">
         <button
+          v-if="!isAuthenticated"
           class="bg-primary hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200"
           @click="goToLogin"
         >
           Log in
         </button>
         <button
+          v-if="isAuthenticated"
           class="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200"
           @click="logout"
         >
           Logout
         </button>
-        <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+        <div v-if="isAuthenticated" class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
           G
         </div>
       </div>
@@ -36,8 +46,10 @@
         </button>
         <!-- Menu desplegable -->
         <div v-if="isOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-          <a @click.prevent="goToLogin" href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Log in</a>
-          <a @click.prevent="logout" href="#" class="block py-2 px-4 text-red-600 hover:bg-gray-100">Logout</a>
+          <a v-if="!isAuthenticated" @click.prevent="goToLogin" href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Log in</a>
+          <a v-if="isAuthenticated" href="/admin/dashboard" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Dashboard</a>
+          <a v-if="isAuthenticated" href="/admin/createapis" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Create Api</a>
+          <a v-if="isAuthenticated" @click.prevent="logout" href="#" class="block py-2 px-4 text-red-600 hover:bg-gray-100">Logout</a>
         </div>
       </div>
     </div>
@@ -45,11 +57,40 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
 
   const isOpen = ref(false);
   const router = useRouter();
+  const isAuthenticated = ref(false);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      isAuthenticated.value = false;
+      return;
+    }
+    try {
+      const res = await fetch('/admin-auth/auth', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      isAuthenticated.value = !!data.valid;
+      if (!data.valid) {
+        localStorage.removeItem('token');
+      }
+    } catch (e) {
+      isAuthenticated.value = false;
+      localStorage.removeItem('token');
+    }
+  };
+
+  onMounted(() => {
+    checkAuth();
+    window.addEventListener('storage', checkAuth);
+  });
 
   const toggleMenu = () => {
     isOpen.value = !isOpen.value;
@@ -61,6 +102,7 @@
 
   const logout = () => {
     localStorage.removeItem('token');
+    isAuthenticated.value = false;
     router.push({ name: 'Login' });
   };
 </script>
