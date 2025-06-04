@@ -35,7 +35,7 @@
           Logout
         </button>
         <div v-if="isAuthenticated" class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
-          G
+          {{ userInitial }}
         </div>
       </div>
 
@@ -57,17 +57,20 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
 
   const isOpen = ref(false);
   const router = useRouter();
   const isAuthenticated = ref(false);
+  const userInitial = ref('');
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
+    const email = localStorage.getItem('email');
     if (!token) {
       isAuthenticated.value = false;
+      userInitial.value = '';
       return;
     }
     try {
@@ -78,12 +81,18 @@
       });
       const data = await res.json();
       isAuthenticated.value = !!data.valid;
-      if (!data.valid) {
+      if (data.valid && email) {
+        userInitial.value = email.charAt(0).toUpperCase();
+      } else {
+        userInitial.value = '';
         localStorage.removeItem('token');
+        localStorage.removeItem('email');
       }
     } catch (e) {
       isAuthenticated.value = false;
+      userInitial.value = '';
       localStorage.removeItem('token');
+      localStorage.removeItem('email');
     }
   };
 
@@ -102,7 +111,9 @@
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('email');
     isAuthenticated.value = false;
+    userInitial.value = '';
     router.push({ name: 'Login' });
   };
 </script>
