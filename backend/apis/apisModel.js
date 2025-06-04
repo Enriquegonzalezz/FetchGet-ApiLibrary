@@ -1,6 +1,36 @@
 import createConnection from '../connection.js';
 
 class ApisModel {
+    static async getFive() {
+        let connection;
+        try {
+            connection = await createConnection();
+            const [rows] = await connection.execute("SELECT * FROM apis LIMIT 5");
+            return rows; // Retorna las primeras 5 APIs
+        } catch (error) {
+            throw new Error(`Error al obtener las APIs: ${error.message}`);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+
+    static async count() {
+        let connection;
+        try {
+            connection = await createConnection();
+            const [rows] = await connection.execute("SELECT COUNT(*) AS count FROM apis");
+            return rows[0].count; // Retorna el conteo de APIs
+        } catch (error) {
+            throw new Error(`Error al contar las APIs: ${error.message}`);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+
     static async store({ api }) {
         const {
             name,

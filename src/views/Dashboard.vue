@@ -1,25 +1,41 @@
 <script setup>
-import Header from '../components/header.vue';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+  import Header from '../components/header.vue';
+  import { ref, onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
 
-const router = useRouter();
+  const router = useRouter();
 
-const recentApis = ref([
-  { name: 'Weather API', version: 'v1.2', status: 'Active', lastUpdated: '2023-09-15' },
-  { name: 'E-commerce API', version: 'v2.0', status: 'Active', lastUpdated: '2023-09-10' },
-  { name: 'Social Media API', version: 'v1.6', status: 'Notions', lastUpdated: '2023-07-20' },
-  { name: 'Finance API', version: 'v1.0', status: 'Active', lastUpdated: '2023-09-05' },
-  { name: 'Travel API', version: 'v2.1', status: 'Active', lastUpdated: '2023-09-12' },
-]);
+  const totalApis = ref(0);
+  const recentApis = ref([]);
 
-const createNewApi = () => {
-  router.push({ name: 'CreateApi' });
-};
+  const fetchTotalApis = async () => {
+    try {
+      const res = await fetch('/apis-model/getcount');
+      const data = await res.json();
+      totalApis.value = data.count || 0;
+    } catch (e) {
+      totalApis.value = 0;
+    }
+  };
 
-const viewAllApis = () => {
-  router.push({ name: 'AllApis' });
-};
+  const fetchRecentApis = async () => {
+    try {
+      const res = await fetch('/apis-model/getfive');
+      const data = await res.json();
+      recentApis.value = Array.isArray(data) ? data : [];
+    } catch (e) {
+      recentApis.value = [];
+    }
+  };
+
+  const createNewApi = () => {
+    router.push({ name: 'CreateApi' });
+  };
+
+  onMounted(() => {
+    fetchTotalApis();
+    fetchRecentApis();
+  });
 </script>
 
 <template>
@@ -32,15 +48,13 @@ const viewAllApis = () => {
       <!--Estadisticas-->
       <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white p-6 rounded-lg border border-2 ">
-          <h2 class="text-5xl font-bold text-gray-800 mb-2">12.345</h2>
+          <h2 class="text-5xl font-bold text-gray-800 mb-2">{{ totalApis }}</h2>
           <p class="text-gray-600">Total API</p>
         </div>
       </section>
 
-
       <!--Actividad reciente -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-       
         <section class="lg:col-span-2 bg-white p-6 rounded-lg border border-2">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
           
@@ -49,22 +63,17 @@ const viewAllApis = () => {
               <thead class="bg-gray-50">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">API Name</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Endpoint</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="api in recentApis" :key="api.name">
+                <tr v-for="api in recentApis" :key="api.id || api.name">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ api.name }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.version }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <span :class="`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${api.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`">
-                      {{ api.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.lastUpdated }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.category }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.endpoint }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.updated_at || api.lastUpdated || '-' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -82,7 +91,6 @@ const viewAllApis = () => {
             >
               Create New API
             </button>
-
           </div>
         </section>
       </div>

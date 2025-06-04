@@ -32,6 +32,8 @@ export function createApisRouter() {
     const apisController = new ApisController();
 
     apisRouter.post('/register', upload.single('preview'), apisController.register);
+    apisRouter.get('/getfive', apisController.getFive);
+    apisRouter.get('/getcount', apisController.getCount);
 
     return apisRouter;
 }
