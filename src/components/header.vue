@@ -18,6 +18,12 @@
         >
           Log in
         </button>
+        <button
+          class="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200"
+          @click="logout"
+        >
+          Logout
+        </button>
         <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
           G
         </div>
@@ -31,6 +37,7 @@
         <!-- Menu desplegable -->
         <div v-if="isOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
           <a @click.prevent="goToLogin" href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-100">Log in</a>
+          <a @click.prevent="logout" href="#" class="block py-2 px-4 text-red-600 hover:bg-gray-100">Logout</a>
         </div>
       </div>
     </div>
@@ -38,22 +45,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+  import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
 
-const isOpen = ref(false);
-const router = useRouter();
+  const isOpen = ref(false);
+  const router = useRouter();
 
-const toggleMenu = () => {
-  isOpen.value = !isOpen.value;
-};
+  const toggleMenu = () => {
+    isOpen.value = !isOpen.value;
+  };
 
-const goToLogin = () => {
-  router.push({ name: 'Login' });
-};
+  const goToLogin = () => {
+    router.push({ name: 'Login' });
+  };
 
-const goToregister = () => {
-  router.push({ name: 'Register' });
-};
+  const logout = () => {
+    localStorage.removeItem('token');
+    router.push({ name: 'Login' });
+  };
 </script>
-
