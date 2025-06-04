@@ -51,13 +51,18 @@
   const password = ref('');
   const error = ref('');
   const router = useRouter();
+  const token = localStorage.getItem('token');
+  console.log('Token:', token);
 
   const handleLogin = async () => {
     error.value = '';
     try {
       const res = await fetch('/admin-auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ email: email.value, password: password.value })
       });
       const data = await res.json();
@@ -65,7 +70,9 @@
         error.value = data.error?.error || data.error || data;
         return;
       }
-      // Guardar token si es necesario: localStorage.setItem('token', data.token);
+      console.log('Login successful:', data);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('email', email.value);
       router.push('/admin/dashboard');
     } catch (e) {
       error.value = 'Error de red o del servidor';

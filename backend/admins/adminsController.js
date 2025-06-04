@@ -5,6 +5,10 @@ import 'dotenv/config';
 
 class AdminsController {
     login = async (req, res) => {
+        const authResult = await this.auth(req);
+        if (authResult.valid) {
+            return res.status(400).json({ error: "Ya has iniciado sesión" });
+        }
         const result = validateLogin(req.body);
         if (!result.success) {
             return res.status(400).json({ error: JSON.parse(result.error.message) });
@@ -15,7 +19,8 @@ class AdminsController {
             const response = await AdminsModel.login({ admin });
             return res.status(200).json({
                 message: `El administrador ${response.email} ha iniciado sesión exitosamente`,
-                token: response.token
+                token: response.token,
+                email: response.email
             });
         } catch (error) {
             console.log(error);
@@ -31,7 +36,7 @@ class AdminsController {
     async auth(req) {
         const token = req.headers.authorization?.split(' ')[1];
 
-        if (!token) {
+        if (!token || token === 'null' || token === 'undefined' || token === '') {
             return { valid: false };
         }
 
