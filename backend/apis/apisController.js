@@ -3,13 +3,28 @@ import { validateApi } from './apisValidate.js';
 
 class ApisController {
     register = async (req, res) => {
-        const result = validateApi(req.body);
-        if (!result.success) {
-            return res.status(400).json({ error: JSON.parse(result.error.message) });
+        if (req.fileValidationError) {
+            return res.status(400).json({ error: req.fileValidationError });
         }
-
+        if (!req.file) {
+            return res.status(400).json({ error: 'El archivo preview es obligatorio y debe ser una imagen de máximo 2MB.' });
+        }
+        // Si usas multer, el archivo estará en req.file
+        const previewFileName = req.file ? req.file.filename : '';
+        // Los otros campos estarán en req.body
+        const apiInput = {
+            ...req.body,
+            preview: previewFileName,
+            json: req.body.json // Si necesitas parsear, hazlo aquí
+        };
+    
+        const result = validateApi(apiInput);
+        if (!result.success) {
+            return res.status(400).json({ error: result.error.errors });
+        }
+    
         const api = result.data;
-
+    
         try {
             const result = await ApisModel.store({ api });
             return res.status(201).json({ message: `API ${result} registrada exitosamente` });

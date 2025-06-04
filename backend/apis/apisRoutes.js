@@ -1,13 +1,37 @@
-const { Router } = require('express');
-const { ApisController } = require('./apisController.js');
+import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import { ApisController } from './apisController.js';
 
 export function createApisRouter() {
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, path.resolve('images'));
+        },
+        filename: function (req, file, cb) {
+            cb(null, Date.now() + '-' + file.originalname);
+        }
+    });
+
+    // Filtro para aceptar solo imágenes
+    function fileFilter(req, file, cb) {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('El archivo debe ser una imagen'), false);
+        }
+    }
+
+    const upload = multer({
+        storage,
+        fileFilter,
+        limits: { fileSize: 2 * 1024 * 1024 } // 2MB
+    });
+
     const apisRouter = Router();
     const apisController = new ApisController();
 
-    // Define las rutas para las APIs
-    apisRouter.post('/register', apisController.register);
-    // Puedes agregar más rutas aquí según sea necesario
+    apisRouter.post('/register', upload.single('preview'), apisController.register);
 
     return apisRouter;
 }
