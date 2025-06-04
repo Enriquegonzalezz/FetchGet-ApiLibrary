@@ -46,8 +46,28 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const protectedRoutes = ['/admin/dashboard', '/admin/createapis'];
+  const token = localStorage.getItem('token');
+
+  // Si intenta acceder a /login y ya está autenticado, redirige al dashboard
+  if (to.path === '/login' && token) {
+    try {
+      const res = await fetch('/admin-auth/auth', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.valid) {
+        return next('/admin/dashboard');
+      }
+    } catch (e) {
+      // Si hay error, sigue a login
+    }
+    return next();
+  }
+
+  // Proteger rutas de admin
   if (protectedRoutes.includes(to.path)) {
-    const token = localStorage.getItem('token');
     if (!token) {
       return next('/login');
     }
