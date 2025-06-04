@@ -1,4 +1,4 @@
-import { validateLogin } from "./usersValidate.js";
+import { validateLogin } from "./adminsValidate.js";
 import { AdminsModel } from "./adminsModel.js";
 import jwt from "jsonwebtoken";
 import 'dotenv/config';
@@ -19,13 +19,12 @@ class AdminsController {
             });
         } catch (error) {
             console.log(error);
-            return res.status(500).json({ error: 'Error al iniciar sesión' });
+            return res.status(500).json({ error: error.message });
         }
     }
 
     getAuth = async (req, res) => {
         const authResult = await this.auth(req);
-        console.log(authResult);
         return res.json(authResult);
     }
 

@@ -61,8 +61,7 @@ class AdminsModel {
                 token: token
             };
         } catch (error) {
-            console.log(error);
-            throw new Error(`Error al buscar el administrador ${email}: ${error.message}`);
+            throw new Error(error.message);
         } finally {
             if (connection) {
                 await connection.end();
@@ -82,7 +81,7 @@ class AdminsModel {
     static async createTable() {
         let connection;
         try {
-            const hashedPassword = bcrypt.hashSync('adminadmmin', Number(process.env.SALT_ROUNDS));
+            const hashedPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD, Number(process.env.SALT_ROUNDS));
             connection = await createConnection();
             const createTableQuery = `
                 CREATE TABLE IF NOT EXISTS admins (
