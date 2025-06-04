@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import ApiLibraryView from '../views/ApiLibraryView.vue'; 
 import ApiDetailView from '../views/ApiDetailView.vue'; 
 import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
 import Dashboard from '../views/Dashboard.vue' 
 import CreateApiView from '../views/CreateApiView.vue'
 
@@ -45,5 +44,31 @@ const router = createRouter({
   routes
 });
 
+router.beforeEach(async (to, from, next) => {
+  const protectedRoutes = ['/admin/dashboard', '/admin/createapis'];
+  if (protectedRoutes.includes(to.path)) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return next('/login');
+    }
+    try {
+      const res = await fetch('/admin-auth/auth', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        localStorage.removeItem('token');
+        return next('/login');
+      }
+      return next();
+    } catch (e) {
+      return next('/login');
+    }
+  } else {
+    return next();
+  }
+});
 
 export default router;
