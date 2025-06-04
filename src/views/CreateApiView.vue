@@ -8,7 +8,8 @@
     category: '',
     endpoint: '',
     json: '',
-    preview: ''
+    preview: '',
+    previewFile: null
   });
 
   const errors = ref({
@@ -20,7 +21,12 @@
     preview: false
   });
 
+  const error = ref('');
+  const success = ref('');
+
   const submitForm = async () => {
+    error.value = '';
+    success.value = '';
 
     const formData = new FormData();
     formData.append('name', apiData.value.name);
@@ -38,16 +44,15 @@
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
-          // No pongas 'Content-Type', fetch lo pone solo para FormData
         },
         body: formData
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Error al registrar la API');
+        error.value = data.error || 'Error al registrar la API';
         return;
       }
-      alert('API creada exitosamente!');
+      success.value = '¡API creada exitosamente!';
       apiData.value = {
         name: '',
         description: '',
@@ -58,24 +63,25 @@
         previewFile: null
       };
     } catch (e) {
+      error.value = 'Error al crear la API: ' + (e.message || e);
       console.error('Error al crear la API:', e);
     }
   };
 
-  // Cambia tu handleFileUpload:
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        alert('El archivo debe ser una imagen.');
+        error.value = 'El archivo debe ser una imagen.';
         return;
       }
       if (file.size > 2 * 1024 * 1024) {
-        alert('La imagen no debe superar los 2MB.');
+        error.value = 'La imagen no debe superar los 2MB.';
         return;
       }
       apiData.value.preview = file.name;
       apiData.value.previewFile = file;
+      error.value = '';
     }
   };
 </script>
@@ -170,6 +176,13 @@
               >
               <p v-if="errors.preview" class="text-red-500 text-sm mt-1">El preview es requerido</p>
             </div>
+          </div>
+
+          <div v-if="error" class="bg-red-100 text-red-700 p-2 rounded mb-2 text-center">
+            {{ error }}
+          </div>
+          <div v-if="success" class="bg-green-100 text-green-700 p-2 rounded mb-2 text-center">
+            {{ success }}
           </div>
 
           <div class="flex justify-end border-t pt-6">
