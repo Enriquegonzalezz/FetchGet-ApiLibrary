@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createAdminsRouter } from './backend/admins/adminsRoutes.js';
 import { createApisRouter } from './backend/apis/apisRoutes.js';
+import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

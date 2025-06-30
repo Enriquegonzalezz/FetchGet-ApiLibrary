@@ -42,7 +42,7 @@ class AdminsController {
 
         try {
             const decoded = await new Promise((resolve, reject) => {
-                jwt.verify(token, process.env.SECRET_JWT_KEY, (err, decoded) => {
+                jwt.verify(token, process.env.SECRET_JWT_KEY || 'llave-secreta-para-la-codificacion-del-json-web-token', (err, decoded) => {
                     if (err) {
                         reject(err);
                     } else {

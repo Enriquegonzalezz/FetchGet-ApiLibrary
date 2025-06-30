@@ -9,7 +9,7 @@ class AdminsModel {
             password,
             email
         } = admin;
-        const hashedPassword = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
+        const hashedPassword = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS || 10));
 
         let connection;
         try {
@@ -51,7 +51,7 @@ class AdminsModel {
 
             const token = jwt.sign(
                 { username: user.username, email: user.email },
-                process.env.SECRET_JWT_KEY,
+                process.env.SECRET_JWT_KEY || 'llave-secreta-para-la-codificacion-del-json-web-token',
                 {
                     expiresIn: "1h"
                 }
@@ -70,7 +70,7 @@ class AdminsModel {
     }
 
     static async verifyToken({ token }) {
-        return jwt.verify(token, process.env.SECRET_JWT_KEY, (err) => {
+        return jwt.verify(token, process.env.SECRET_JWT_KEY || 'llave-secreta-para-la-codificacion-del-json-web-token', (err) => {
             if (err) {
                 return { valid: false };
             }
@@ -81,7 +81,7 @@ class AdminsModel {
     static async createTable() {
         let connection;
         try {
-            const hashedPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD, Number(process.env.SALT_ROUNDS));
+            const hashedPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'adminadmin', Number(process.env.SALT_ROUNDS || 10));
             connection = await createConnection();
             const createTableQuery = `
                 CREATE TABLE IF NOT EXISTS admins (
