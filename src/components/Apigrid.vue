@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import Apicard from '@/components/Apicard.vue';
 
 // Datos de ejemplo para las APIs
@@ -92,6 +92,13 @@ const apis = ref([
 
 const categories = ref(['All Categories', 'Movies', 'Finance', 'Weather', 'Social Media']);
 const selectedCategory = ref('All Categories');
+const searchText = ref('');
+
+const filteredApis = computed(() => {
+  return apis.value.filter(api =>
+    api.title.toLowerCase().includes(searchText.value.toLowerCase())
+  );
+});
 
 const handleCategoryClick = (category) => {
   selectedCategory.value = category;
@@ -108,7 +115,7 @@ const handleCategoryClick = (category) => {
 
     <div class=" flex items-center gap-2 mb-4 px-4 py-2 border rounded-md w-full bg-secondary border-none" > 
         <img src="/Lupita.svg" alt="">
-         <input type="text" placeholder="Search APIs..." class = "bg-secondary w-full focus:outline-none " />
+         <input type="text" placeholder="Search APIs..." class = "bg-secondary w-full focus:outline-none " v-model="searchText" />
  
 
     </div>
@@ -141,7 +148,7 @@ const handleCategoryClick = (category) => {
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5 gap-3">
-      <Apicard v-for="api in apis" :key="api.id" :api="api" />
+      <Apicard v-for="api in filteredApis" :key="api.id" :api="api" />
     </div>
 
     <div class="flex justify-center mt-12 space-x-4">
