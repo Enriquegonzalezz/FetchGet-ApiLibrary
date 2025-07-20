@@ -90,19 +90,30 @@ const apis = ref([
   },
 ]);
 
-const categories = ref(['All Categories', 'Movies', 'Finance', 'Weather', 'Social Media']);
+// Obtener categorías únicas de las APIs
+const uniqueCategories = computed(() => {
+  const cats = apis.value.map(api => api.category);
+  return ['All Categories', ...Array.from(new Set(cats))];
+});
 const selectedCategory = ref('All Categories');
+const showDropdown = ref(false);
+
 const searchText = ref('');
 
 const filteredApis = computed(() => {
-  return apis.value.filter(api =>
-    api.title.toLowerCase().includes(searchText.value.toLowerCase())
-  );
+  return apis.value.filter(api => {
+    const matchesSearch = api.title.toLowerCase().includes(searchText.value.toLowerCase());
+    const matchesCategory = selectedCategory.value === 'All Categories' || api.category === selectedCategory.value;
+    return matchesSearch && matchesCategory;
+  });
 });
 
-const handleCategoryClick = (category) => {
+const handleCategorySelect = (category) => {
   selectedCategory.value = category;
-  //aquifiltraremos las apis por categoria
+  showDropdown.value = false;
+};
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value;
 };
 </script>
 
@@ -119,32 +130,30 @@ const handleCategoryClick = (category) => {
  
 
     </div>
-   
-    <div class="flex flex-wrap gap-4 mb-4">
+
+    <div class="relative mb-4 w-60">
       <button
-        v-for="category in categories"
-        :key="category"
-        :class="[
-          'px-3',
-            'py-1',
-          'rounded-md',
-          'border-none',
-          'bg-secondary',
-          'hover:bg-gray-100',
-          'focus:outline-none',
-          'focus:ring-2',
-          'focus:ring-primary',
-          'flex',
-          'items-center',
-          'justify-center',
-          'gap-3',
-          { 'text-black': selectedCategory === category }
-        ]"
-        @click="handleCategoryClick(category)"
+        class="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-between w-full focus:outline-none focus:ring-2 focus:ring-primary"
+        @click="toggleDropdown"
       >
-        {{ category }}
-        <img src="/flecha.svg" alt="Flecha" class="w-4 h-4" />
+        {{ selectedCategory }}
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
       </button>
+      <div v-if="showDropdown" class="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg"
+        style="max-height: 220px; overflow-y: auto;"
+      >
+        <ul>
+          <li v-for="category in uniqueCategories" :key="category">
+            <button
+              class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none"
+              :class="{ 'font-bold text-primary': selectedCategory === category }"
+              @click="handleCategorySelect(category)"
+            >
+              {{ category }}
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5 gap-3">
