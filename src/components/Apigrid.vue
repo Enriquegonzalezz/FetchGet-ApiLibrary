@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import Apicard from '@/components/Apicard.vue';
 
 // Datos de ejemplo para las APIs
@@ -108,6 +108,30 @@ const filteredApis = computed(() => {
   });
 });
 
+const apisPerPage = 10;
+const currentPage = ref(1);
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredApis.value.length / apisPerPage);
+});
+
+const paginatedApis = computed(() => {
+  const start = (currentPage.value - 1) * apisPerPage;
+  const end = start + apisPerPage;
+  return filteredApis.value.slice(start, end);
+});
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
+
+// Resetear a la página 1 cuando cambian los filtros
+watch([searchText, selectedCategory], () => {
+  currentPage.value = 1;
+});
+
 const handleCategorySelect = (category) => {
   selectedCategory.value = category;
   showDropdown.value = false;
@@ -157,19 +181,23 @@ const toggleDropdown = () => {
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5 gap-3">
-      <Apicard v-for="api in filteredApis" :key="api.id" :api="api" />
+      <Apicard v-for="api in paginatedApis" :key="api.id" :api="api" />
     </div>
 
     <div class="flex justify-center mt-12 space-x-4">
-      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100">
+      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
         &lt;
       </button>
-      <button class="px-4 py-2 border rounded-md bg-primary text-white hidden md:inline-block">1</button>
-      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100 hidden md:inline-block">2</button>
-      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100 hidden md:inline-block">3</button>
-      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100 hidden md:inline-block">4</button>
-      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100 hidden md:inline-block">5</button>
-      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100">
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="px-4 py-2 border rounded-md"
+        :class="{ 'bg-primary text-white': currentPage === page, 'text-gray-600 hover:bg-gray-100': currentPage !== page }"
+        @click="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+      <button class="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">
         &gt;
       </button>
     </div>
