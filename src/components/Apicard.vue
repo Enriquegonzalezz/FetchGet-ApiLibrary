@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-lg overflow-hidden transition-transform duration-200 hover:scale-[1.02] border-none bg-transparent cursor-pointer" @click="goToApiDetail(api.title)">
-    <img :src="api.image" :alt="api.title" class="w-full h-32 sm:h-48 object-cover">
+    <img :src="api.image" :alt="api.title" class="w-full h-32 sm:h-48 object-cover rounded-3xl">
     <div class="py-4">
       <h3 class="text-left font-semibold text-gray-800 mb-1">{{ api.title }}</h3>
       <p class="text-sm text-gray-600">{{ api.description }}</p>
