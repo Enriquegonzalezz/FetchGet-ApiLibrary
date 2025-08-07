@@ -125,10 +125,38 @@
                 name="category"
               >
                 <option value="">Select a category</option>
-                <option value="weather">Weather</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="social">Social Media</option>
-                <option value="movies">Movies</option>
+                <option value="Weather">Weather</option>
+                <option value="E-commerce">E-commerce</option>
+                <option value="Social Media">Social Media</option>
+                <option value="Movies">Movies</option>
+                <option value="Finance">Finance</option>
+                <option value="Music">Music</option>
+                <option value="Travel">Travel</option>
+                <option value="Food">Food</option>
+                <option value="Gaming">Gaming</option>
+                <option value="Fitness">Fitness</option>
+                <option value="News">News</option>
+                <option value="Tools">Tools</option>
+                <option value="Education">Education</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Sports">Sports</option>
+                <option value="Technology">Technology</option>
+                <option value="Business">Business</option>
+                <option value="Real Estate">Real Estate</option>
+                <option value="Automotive">Automotive</option>
+                <option value="Fashion">Fashion</option>
+                <option value="Beauty">Beauty</option>
+                <option value="Home & Garden">Home & Garden</option>
+                <option value="Pets">Pets</option>
+                <option value="Books">Books</option>
+                <option value="Art">Art</option>
+                <option value="Photography">Photography</option>
+                <option value="Events">Events</option>
+                <option value="Government">Government</option>
+                <option value="Non-Profit">Non-Profit</option>
+                <option value="Other">Other</option>
               </select>
               <p v-if="errors.category" class="text-red-500 text-sm mt-1">La categoría es requerida</p>
             </div>

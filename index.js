@@ -26,6 +26,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 const vueRoutes = ['/login', '/admin/dashboard', '/apis', '/apis/:id', '/admin/createapis'];
 vueRoutes.forEach(route => {
