@@ -31,7 +31,15 @@ onMounted(async () => {
 // Obtener categorías únicas de las APIs
 const uniqueCategories = computed(() => {
   const cats = apis.value.map(api => api.category);
-  return ['All Categories', ...Array.from(new Set(cats))];
+  // Normalizar categorías para evitar duplicados
+  const normalizedCats = cats.map(cat => {
+    const normalized = cat.toLowerCase();
+    if (normalized === 'ecommerce' || normalized === 'e-commerce') {
+      return 'E-commerce';
+    }
+    return cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
+  });
+  return ['All Categories', ...Array.from(new Set(normalizedCats))];
 });
 const selectedCategory = ref('All Categories');
 const showDropdown = ref(false);
@@ -41,7 +49,16 @@ const searchText = ref('');
 const filteredApis = computed(() => {
   return apis.value.filter(api => {
     const matchesSearch = api.title.toLowerCase().includes(searchText.value.toLowerCase());
-    const matchesCategory = selectedCategory.value === 'All Categories' || api.category === selectedCategory.value;
+    const matchesCategory = selectedCategory.value === 'All Categories' || 
+      (() => {
+        const apiCat = api.category.toLowerCase();
+        const selectedCat = selectedCategory.value.toLowerCase();
+        // Normalizar para comparación
+        if (selectedCat === 'e-commerce') {
+          return apiCat === 'ecommerce' || apiCat === 'e-commerce';
+        }
+        return apiCat === selectedCat;
+      })();
     return matchesSearch && matchesCategory;
   });
 });
