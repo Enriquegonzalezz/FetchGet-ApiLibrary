@@ -1,94 +1,32 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import axios from 'axios';
 import Apicard from '@/components/Apicard.vue';
 
 // Datos de ejemplo para las APIs
-const apis = ref([
-  {
-    id: 1,
-    title: 'Movie Database API',
-    description: 'Access comprehensive movie data including ratings, reviews, and cast information.',
-    category: 'Movies',
-    image: '/movieimg.png', // URL de la imagen
-  },
-  {
-    id: 2,
-    title: 'Stock Market Data API',
-    description: 'Real-time stock market data and financial news for informed investment decisions.',
-    category: 'Finance',
-    image: '/apimarket.png', // URL de la imagen
-  },
-  {
-    id: 3,
-    title: 'Weather Forecast API',
-    description: 'Get accurate weather forecasts and historical data for any location.',
-    category: 'Weather',
-    image: '/Apiweather.png', // URL de la imagen
-  },
-  {
-    id: 4,
-    title: 'Social Media Analytics API',
-    description: 'Analyze social media trends, user engagement, and brand mentions.',
-    category: 'Social Media',
-    image: '/ApiSocialmedia.png', // URL de la imagen
-  },
-  {
-    id: 5,
-    title: 'E-commerce Product API',
-    description: 'Manage product catalogs, inventory, and customer orders for your e-commerce platform.',
-    category: 'E-commerce',
-    image: '/ApiEcomerce.png', // URL de la imagen
-  },
-  {
-    id: 6,
-    title: 'Music Streaming API',
-    description: 'Integrate music streaming services with millions of songs and playlists.',
-    category: 'Music',
-    image: '/ApiStreaming.png', // URL de la imagen
-  },
-  {
-    id: 7,
-    title: 'Travel Booking API',
-    description: 'Book flights, hotels, and rental cars with ease using our travel API.',
-    category: 'Travel',
-    image: '/ApiTrave.png', // URL de la imagen
-  },
-  {
-    id: 8,
-    title: 'Food Delivery API',
-    description: 'Connect to popular food delivery services and manage orders seamlessly.',
-    category: 'Food',
-    image: '/Apifood.png', // URL de la imagen
-  },
-  {
-    id: 9,
-    title: 'Gaming Platform API',
-    description: 'Enhance your gaming platform with user profiles, leaderboards, and in-game purchases.',
-    category: 'Gaming',
-    image: '/Apigaming.png', // URL de la imagen
-  },
-  {
-    id: 10,
-    title: 'Fitness Tracking API',
-    description: 'Track user fitness activities, health metrics, and workout routines.',
-    category: 'Fitness',
-    image: '/ApiFitness.png', // URL de la imagen
-  },
-  {
-    id: 11,
-    title: 'News Aggregator API',
-    description: 'Stay up-to-date with the latest news from various sources and topics.',
-    category: 'News',
-    image: '/Apiagregator.png', // URL de la imagen
-  },
-  {
-    id: 12,
-    title: 'Language Translation API',
-    description: 'Translate text between multiple languages with high accuracy and speed.',
-    category: 'Tools',
-    image: '/Apilenguage.png', // URL de la imagen
-  },
-]);
+const apis = ref([]);
+
+// Obtener APIs reales del backend al montar el componente
+onMounted(async () => {
+  try {
+    console.log('Intentando obtener APIs del backend...');
+    const response = await axios.get('http://localhost:3000/apis-model/apis');
+    console.log('Respuesta del backend:', response.data);
+    // Adaptar los campos si es necesario
+    apis.value = response.data.map(api => ({
+      id: api.id,
+      title: api.name, // en la BD es 'name', en el front es 'title'
+      description: api.description,
+      category: api.category,
+      image: api.preview ? `/images/${api.preview}` : '/movieimg.png', // Ajusta la ruta según tu backend
+      // otros campos si los necesitas
+    }));
+    console.log('APIs procesadas:', apis.value);
+  } catch (error) {
+    console.error('Error al obtener las APIs:', error);
+    console.error('Detalles del error:', error.response?.data || error.message);
+  }
+});
 
 // Obtener categorías únicas de las APIs
 const uniqueCategories = computed(() => {

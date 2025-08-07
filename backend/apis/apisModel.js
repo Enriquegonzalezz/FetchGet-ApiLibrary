@@ -31,6 +31,21 @@ class ApisModel {
         }
     }
 
+    static async getAll() {
+        let connection;
+        try {
+            connection = await createConnection();
+            const [rows] = await connection.execute("SELECT * FROM apis ORDER BY id DESC");
+            return rows; // Retorna todas las APIs
+        } catch (error) {
+            throw new Error(`Error al obtener las APIs: ${error.message}`);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+    }
+
     static async store({ api }) {
         const {
             name,
