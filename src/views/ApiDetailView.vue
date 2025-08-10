@@ -2,124 +2,16 @@
 import Header from '@/components/Header.vue';
 import DetailsApi from '@/components/DetailsApi.vue';
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
+const router = useRouter();
 const apiName = route.params.apiName;
 
 const api = ref(null);
+const loading = ref(true);
+const error = ref('');
 
-
-const apis = ref([
-  {
-    id: 1,
-    title: 'Movie Database API',
-    description: 'Access comprehensive movie data including ratings, reviews, and cast information.',
-    category: 'Movies',
-    image: '/movieimg.png',
-    endpoint: 'https://example.com/movies',
-    response: { movies: [{ title: 'Movie 1' }, { title: 'Movie 2' }] }
-  },
-  {
-    id: 2,
-    title: 'Stock Market Data API',
-    description: 'Real-time stock market data and financial news for informed investment decisions.',
-    category: 'Finance',
-    image: '/apimarket.png',
-    endpoint: 'https://example.com/stocks',
-    response: { stocks: [{ symbol: 'AAPL', price: 150 }, { symbol: 'GOOG', price: 2500 }] }
-  },
-  {
-    id: 3,
-    title: 'Weather Forecast API',
-    description: 'Get accurate weather forecasts and historical data for any location.',
-    category: 'Weather',
-    image: '/Apiweather.png',
-    endpoint: 'https://example.com/weather',
-    response: { weather: { city: 'London', temp: 18, condition: 'Cloudy' } }
-  },
-  {
-    id: 4,
-    title: 'Social Media Analytics API',
-    description: 'Analyze social media trends, user engagement, and brand mentions.',
-    category: 'Social Media',
-    image: '/ApiSocialmedia.png',
-    endpoint: 'https://example.com/socialmedia',
-    response: { analytics: { followers: 1200, likes: 340, shares: 56 } }
-  },
-  {
-    id: 5,
-    title: 'E-commerce Product API',
-    description: 'Manage product catalogs, inventory, and customer orders for your e-commerce platform.',
-    category: 'E-commerce',
-    image: '/ApiEcomerce.png',
-    endpoint: 'https://example.com/ecommerce',
-    response: { products: [{ name: 'T-shirt', price: 20 }, { name: 'Shoes', price: 50 }] }
-  },
-  {
-    id: 6,
-    title: 'Music Streaming API',
-    description: 'Integrate music streaming services with millions of songs and playlists.',
-    category: 'Music',
-    image: '/ApiStreaming.png',
-    endpoint: 'https://example.com/music',
-    response: { songs: [{ title: 'Song 1', artist: 'Artist A' }, { title: 'Song 2', artist: 'Artist B' }] }
-  },
-  {
-    id: 7,
-    title: 'Travel Booking API',
-    description: 'Book flights, hotels, and rental cars with ease using our travel API.',
-    category: 'Travel',
-    image: '/ApiTrave.png',
-    endpoint: 'https://example.com/travel',
-    response: { bookings: [{ type: 'flight', status: 'confirmed' }, { type: 'hotel', status: 'pending' }] }
-  },
-  {
-    id: 8,
-    title: 'Food Delivery API',
-    description: 'Connect to popular food delivery services and manage orders seamlessly.',
-    category: 'Food',
-    image: '/Apifood.png',
-    endpoint: 'https://example.com/food',
-    response: { orders: [{ restaurant: 'Pizza Place', status: 'delivered' }] }
-  },
-  {
-    id: 9,
-    title: 'Gaming Platform API',
-    description: 'Enhance your gaming platform with user profiles, leaderboards, and in-game purchases.',
-    category: 'Gaming',
-    image: '/Apigaming.png',
-    endpoint: 'https://example.com/gaming',
-    response: { leaderboard: [{ user: 'Player1', score: 1000 }] }
-  },
-  {
-    id: 10,
-    title: 'Fitness Tracking API',
-    description: 'Track user fitness activities, health metrics, and workout routines.',
-    category: 'Fitness',
-    image: '/ApiFitness.png',
-    endpoint: 'https://example.com/fitness',
-    response: { activities: [{ type: 'run', distance: 5 }, { type: 'bike', distance: 20 }] }
-  },
-  {
-    id: 11,
-    title: 'News Aggregator API',
-    description: 'Stay up-to-date with the latest news from various sources and topics.',
-    category: 'News',
-    image: '/Apiagregator.png',
-    endpoint: 'https://example.com/news',
-    response: { news: [{ headline: 'Breaking News', date: '2024-01-01' }] }
-  },
-  {
-    id: 12,
-    title: 'Language Translation API',
-    description: 'Translate text between multiple languages with high accuracy and speed.',
-    category: 'Tools',
-    image: '/Apilenguage.png',
-    endpoint: 'https://example.com/translate',
-    response: { translation: { from: 'en', to: 'es', text: 'Hola Mundo' } }
-  }
-]);
 const slugify = (text) => {
   return text.toString().toLowerCase()
     .replace(/\s+/g, '-')           // reemplaza los espacios por guiones
@@ -129,17 +21,110 @@ const slugify = (text) => {
     .replace(/-+$/, '');            // Elimina los guiones al final del texto
 };
 
+const fetchApiByName = async () => {
+  loading.value = true;
+  error.value = '';
+  
+  try {
+    // Intentar obtener por nombre usando el slug
+    const response = await fetch(`/apis-model/getbyname/${encodeURIComponent(apiName)}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      api.value = {
+        id: data.id,
+        title: data.name,
+        description: data.description,
+        category: data.category,
+        image: data.preview ? `/images/${data.preview}` : '/movieimg.png',
+        endpoint: data.endpoint,
+        json: data.json
+      };
+    } else {
+      // Si no se encuentra por nombre, buscar en todas las APIs
+      const allResponse = await fetch('/apis-model/getall?limit=1000');
+      if (allResponse.ok) {
+        const allData = await allResponse.json();
+        const foundApi = allData.apis.find(a => slugify(a.name) === apiName);
+        
+        if (foundApi) {
+          api.value = {
+            id: foundApi.id,
+            title: foundApi.name,
+            description: foundApi.description,
+            category: foundApi.category,
+            image: foundApi.preview ? `/images/${foundApi.preview}` : '/movieimg.png',
+            endpoint: foundApi.endpoint,
+            json: foundApi.json
+          };
+        } else {
+          error.value = 'API no encontrada';
+        }
+      } else {
+        throw new Error('Error al obtener las APIs');
+      }
+    }
+  } catch (err) {
+    error.value = err.message || 'Error al cargar la API';
+    console.error('Error al obtener API:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
 onMounted(() => {
-  api.value = apis.value.find(api => slugify(api.title) === apiName);
+  fetchApiByName();
 });
 </script>
 
 <template>
-  <div class="min-h-screen ">
+  <div class="min-h-screen">
     <Header />
-    <main >
-      <DetailsApi :api="api" />
-      <div v-if="!api" class="text-center text-red-500 mt-8">API no encontrada.</div>
+    <main>
+      <!-- Estado de carga -->
+      <div v-if="loading" class="flex justify-center items-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <span class="ml-3 text-gray-600">Cargando información de la API...</span>
+      </div>
+
+      <!-- Estado de error -->
+      <div v-else-if="error" class="container mx-auto p-4 text-center">
+        <div class="bg-red-50 border border-red-200 rounded-md p-6 mb-4">
+          <h2 class="text-xl font-bold text-red-600 mb-2">Error</h2>
+          <p class="text-red-600">{{ error }}</p>
+        </div>
+        <button 
+          @click="fetchApiByName" 
+          class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark mr-4"
+        >
+          Reintentar
+        </button>
+        <button 
+          @click="router.push('/apis')" 
+          class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+        >
+          Volver a APIs
+        </button>
+      </div>
+
+      <!-- API encontrada -->
+      <div v-else-if="api">
+        <DetailsApi :api="api" />
+      </div>
+
+      <!-- API no encontrada -->
+      <div v-else class="container mx-auto p-4 text-center">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-6 mb-4">
+          <h2 class="text-xl font-bold text-yellow-600 mb-2">API no encontrada</h2>
+          <p class="text-yellow-600">La API que buscas no existe o ha sido eliminada.</p>
+        </div>
+        <button 
+          @click="router.push('/apis')" 
+          class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+        >
+          Ver todas las APIs
+        </button>
+      </div>
     </main>
   </div>
 </template>
