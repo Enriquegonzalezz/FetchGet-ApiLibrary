@@ -1,19 +1,6 @@
 <script setup>
-import { defineProps, ref, onMounted } from 'vue';
+import { defineProps, ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-
-/*import MoviePreview from './previews/MoviePreview.vue';
-import StockMarketPreview from './previews/StockMarketPreview.vue';
-import WeatherPreview from './previews/WeatherPreview.vue';
-import SocialMediaPreview from './previews/SocialMediaPreview.vue';
-import EcommercePreview from './previews/EcommercePreview.vue';
-import MusicPreview from './previews/MusicPreview.vue';
-import TravelPreview from './previews/TravelPreview.vue';
-import FoodPreview from './previews/FoodPreview.vue';
-import GamingPreview from './previews/GamingPreview.vue';
-import FitnessPreview from './previews/FitnessPreview.vue';
-import NewsPreview from './previews/NewsPreview.vue';
-import LanguagePreview from './previews/LanguagePreview.vue';*/
 
 const props = defineProps({
   api: {
@@ -24,66 +11,165 @@ const props = defineProps({
 });
 
 const apiResponse = ref(null);
+const loadingResponse = ref(false);
+
+// Función para copiar al portapapeles
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    // Aquí podrías agregar una notificación de éxito
+    console.log('Copiado al portapapeles');
+  } catch (err) {
+    console.error('Error al copiar:', err);
+  }
+};
+
+// Parsear JSON de manera segura
+const parsedJsonExample = computed(() => {
+  if (!props.api || !props.api.json) return null;
+  try {
+    return typeof props.api.json === 'string' 
+      ? JSON.parse(props.api.json) 
+      : props.api.json;
+  } catch (e) {
+    return props.api.json; // Si no se puede parsear, mostrar como string
+  }
+});
 
 onMounted(async () => {
   if (props.api && props.api.endpoint) {
+    loadingResponse.value = true;
     try {
       const res = await axios.get(props.api.endpoint);
       apiResponse.value = res.data;
     } catch (e) {
       apiResponse.value = { error: 'No se pudo obtener la respuesta del endpoint.' };
+    } finally {
+      loadingResponse.value = false;
     }
   }
 });
-
-/*const previewComponent = computed(() => {
-  if (!props.api) return null;
-  switch (props.api.title) {
-    case 'Movie Database API': return MoviePreview;
-    case 'Stock Market Data API': return StockMarketPreview;
-    case 'Weather Forecast API': return WeatherPreview;
-    case 'Social Media Analytics API': return SocialMediaPreview;
-    case 'E-commerce Product API': return EcommercePreview;
-    case 'Music Streaming API': return MusicPreview;
-    case 'Travel Booking API': return TravelPreview;
-    case 'Food Delivery API': return FoodPreview;
-    case 'Gaming Platform API': return GamingPreview;
-    case 'Fitness Tracking API': return FitnessPreview;
-    case 'News Aggregator API': return NewsPreview;
-    case 'Language Translation API': return LanguagePreview;
-    default: return null;
-  }
-});*/
-
 </script>
 
 
 <template>
   <div v-if="props.api" class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold my-4">{{ props.api.title || 'Movie Database API' }}</h1>
-
-    <h2 class="text-xl font-semibold mt-6 mb-2">Endpoint URL</h2>
-    <div class="bg-white border-2 p-4 rounded-md mb-6 w-5/12 flex items-center justify-between">
-      <p class="text-blue-500 w-fit flex items-center">{{ props.api.endpoint || 'https://api.example.com/movies/{movie_id}' }}</p>
-      <img class="cursor-pointer" src="/copyapi.svg" alt="">
+    <!-- Header con imagen y título -->
+    <div class="flex flex-col lg:flex-row gap-6 mb-8">
+      <div class="flex-shrink-0">
+        <img 
+          :src="props.api.image || '/movieimg.png'" 
+          :alt="props.api.title"
+          class="w-32 h-32 lg:w-48 lg:h-48 object-cover rounded-lg shadow-lg"
+          @error="$event.target.src = '/movieimg.png'"
+        />
+      </div>
+      <div class="flex-grow">
+        <h1 class="text-3xl lg:text-4xl font-bold mb-3">{{ props.api.title }}</h1>
+        <div class="flex items-center gap-4 mb-4">
+          <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+            {{ props.api.category }}
+          </span>
+          <span class="text-gray-600 text-sm">ID: {{ props.api.id }}</span>
+        </div>
+        <p class="text-gray-700 text-lg leading-relaxed">
+          {{ props.api.description }}
+        </p>
+      </div>
     </div>
 
-    <h2 class="text-xl font-semibold mt-6 mb-2">API Documentation</h2>
-    <p class="text-primary">
-      {{ props.api.description }}
-    </p>
+    <!-- Endpoint URL -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-3 flex items-center">
+        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">GET</span>
+        Endpoint URL
+      </h2>
+      <div class="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 flex items-center justify-between">
+        <code class="text-blue-600 font-mono text-sm flex-grow break-all">
+          {{ props.api.endpoint || 'https://api.example.com/endpoint' }}
+        </code>
+        <button 
+          @click="copyToClipboard(props.api.endpoint)"
+          class="ml-4 p-2 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
+          title="Copiar al portapapeles"
+        >
+          <img src="/copyapi.svg" alt="Copiar" class="w-5 h-5">
+        </button>
+      </div>
+    </div>
 
-    <h2 class="text-xl font-semibold mt-6 mb-2 w-3/4">Live JSON Response Example</h2>
-    <pre contenteditable="true" class="bg-slate-100 border-2 rounded-lg p-4 overflow-x-auto text-sm font-satobold w-3/4 transition-all duration-500 animate-fade-in">
-      <code>
-        {{ apiResponse ? JSON.stringify(apiResponse, null, 2) : 'Cargando respuesta de la API...' }}
-      </code>
-    </pre>
+    <!-- Documentación -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-3">📖 Documentación de la API</h2>
+      <div class="bg-white border-2 border-gray-200 rounded-lg p-6">
+        <p class="text-gray-700 leading-relaxed">
+          {{ props.api.description }}
+        </p>
+      </div>
+    </div>
 
-    <h2 class="text-xl font-semibold mt-6 mb-2">Preview of API</h2>
+    <!-- Ejemplo de respuesta JSON desde la base de datos -->
+    <div class="mb-8" v-if="parsedJsonExample">
+      <h2 class="text-xl font-semibold mb-3">📝 Ejemplo de Respuesta JSON</h2>
+      <div class="bg-gray-900 border-2 border-gray-300 rounded-lg p-4 overflow-x-auto">
+        <pre class="text-green-400 font-mono text-sm"><code>{{ JSON.stringify(parsedJsonExample, null, 2) }}</code></pre>
+      </div>
+    </div>
+
+    <!-- Respuesta en vivo del endpoint -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-3">🔴 Respuesta en Vivo del Endpoint</h2>
+      <div class="bg-gray-900 border-2 border-gray-300 rounded-lg p-4 overflow-x-auto">
+        <div v-if="loadingResponse" class="flex items-center text-yellow-400">
+          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400 mr-2"></div>
+          Cargando respuesta de la API...
+        </div>
+        <pre v-else class="text-green-400 font-mono text-sm"><code>{{ apiResponse ? JSON.stringify(apiResponse, null, 2) : 'No se pudo obtener respuesta del endpoint' }}</code></pre>
+      </div>
+    </div>
+
+    <!-- Preview de la API -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-3">👁️ Preview de la API</h2>
+      <div class="bg-white border-2 border-gray-200 rounded-lg p-6">
+        <div class="flex items-center justify-center">
+          <img 
+            :src="props.api.image || '/movieimg.png'" 
+            :alt="props.api.title"
+            class="max-w-full h-auto rounded-lg shadow-md"
+            @error="$event.target.src = '/movieimg.png'"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="font-semibold text-blue-800 mb-2">🔧 Información Técnica</h3>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li><strong>ID:</strong> {{ props.api.id }}</li>
+          <li><strong>Categoría:</strong> {{ props.api.category }}</li>
+          <li><strong>Método:</strong> GET</li>
+          <li><strong>Formato:</strong> JSON</li>
+        </ul>
+      </div>
+      
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h3 class="font-semibold text-green-800 mb-2">🚀 Cómo usar esta API</h3>
+        <ol class="text-sm text-green-700 space-y-1">
+          <li>1. Copia la URL del endpoint</li>
+          <li>2. Realiza una petición GET</li>
+          <li>3. Procesa la respuesta JSON</li>
+          <li>4. Integra en tu aplicación</li>
+        </ol>
+      </div>
+    </div>
   </div>
 
   <div v-else class="container mx-auto p-4 text-center text-gray-500">
-    <p>Cargando información de la API...</p>
+    <div class="animate-pulse">
+      <p>Cargando información de la API...</p>
+    </div>
   </div>
 </template>
