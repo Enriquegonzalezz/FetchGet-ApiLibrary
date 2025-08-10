@@ -34,6 +34,10 @@ export function createApisRouter() {
     apisRouter.post('/register', upload.single('preview'), apisController.register);
     apisRouter.get('/getfive', apisController.getFive);
     apisRouter.get('/getcount', apisController.getCount);
+    apisRouter.get('/getall', apisController.getAll);
+    apisRouter.get('/getbyid/:id', apisController.getById);
+    apisRouter.get('/getbyname/:name', apisController.getByName);
+    apisRouter.delete('/delete/:id', apisController.delete);
 
     return apisRouter;
 }

@@ -22,6 +22,67 @@ class ApisController {
         }
     }
 
+    getAll = async (req, res) => {
+        try {
+            const { category, search, page = 1, limit = 10 } = req.query;
+            
+            const apis = await ApisModel.getAll({
+                category,
+                search,
+                page: parseInt(page),
+                limit: parseInt(limit)
+            });
+
+            const totalCount = await ApisModel.countFiltered({ category, search });
+            const totalPages = Math.ceil(totalCount / parseInt(limit));
+
+            return res.status(200).json({
+                apis,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages,
+                    totalCount,
+                    limit: parseInt(limit)
+                }
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: `Error al obtener las APIs: ${error.message}` });
+        }
+    }
+
+    getById = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const api = await ApisModel.getById(id);
+            
+            if (!api) {
+                return res.status(404).json({ error: 'API no encontrada' });
+            }
+
+            return res.status(200).json(api);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: `Error al obtener la API: ${error.message}` });
+        }
+    }
+
+    getByName = async (req, res) => {
+        try {
+            const { name } = req.params;
+            const api = await ApisModel.getByName(name);
+            
+            if (!api) {
+                return res.status(404).json({ error: 'API no encontrada' });
+            }
+
+            return res.status(200).json(api);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: `Error al obtener la API: ${error.message}` });
+        }
+    }
+
     register = async (req, res) => {
         if (req.fileValidationError) {
             return res.status(400).json({ error: req.fileValidationError });
@@ -51,6 +112,20 @@ class ApisController {
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: `Error al registrar la API: ${error.message}` });
+        }
+    }
+
+    delete = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const deleted = await ApisModel.deleteById(id);
+            if (!deleted) {
+                return res.status(404).json({ error: 'API no encontrada' });
+            }
+            return res.status(200).json({ message: 'API eliminada exitosamente' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: `Error al eliminar la API: ${error.message}` });
         }
     }
 }
