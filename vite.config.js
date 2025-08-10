@@ -12,5 +12,17 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy: {
+      '/admin-auth': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/apis-model': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
+    }
   }
 })
