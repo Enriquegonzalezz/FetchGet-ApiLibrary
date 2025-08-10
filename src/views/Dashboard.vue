@@ -32,6 +32,30 @@
     router.push({ name: 'CreateApi' });
   };
 
+  const deleteApi = async (id) => {
+    if (!confirm('¿Seguro que deseas eliminar esta API?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/apis-model/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Error al eliminar la API');
+        return;
+      }
+      // Actualiza la lista de APIs recientes después de eliminar
+      recentApis.value = recentApis.value.filter(api => api.id !== id);
+      alert('API eliminada exitosamente');
+      fetchTotalApis(); // Actualiza el contador
+    } catch (e) {
+      alert('Error al eliminar la API: ' + (e.message || e));
+    }
+  };
+
   onMounted(() => {
     fetchTotalApis();
     fetchRecentApis();
@@ -94,6 +118,39 @@
           </div>
         </section>
       </div>
+
+      <!-- Ejemplo de tabla de APIs -->
+      <section class="bg-white p-6 rounded-lg border border-2 mt-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">API List</h2>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full">
+            <thead>
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Endpoint</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="api in recentApis" :key="api.id || api.name">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ api.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.category }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ api.endpoint }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button
+                    @click="deleteApi(api.id)"
+                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
 </template>
