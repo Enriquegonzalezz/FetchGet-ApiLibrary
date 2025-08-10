@@ -90,9 +90,9 @@ class AdminsModel {
                     password VARCHAR(500) NOT NULL
                 );
             `;
-            const insertAdminQuery = `INSERT IGNORE INTO admins (email, password) VALUES ('admin@admin.com', '${hashedPassword}');`
+            const insertAdminQuery = `INSERT IGNORE INTO admins (email, password) VALUES ('admin@admin.com', ?);`;
             await connection.execute(createTableQuery);
-            await connection.execute(insertAdminQuery);
+            await connection.execute(insertAdminQuery, [hashedPassword]);
             console.log("Tabla 'admins' creada o ya existe.");
         } catch (error) {
             console.error(`Error al crear la tabla 'admins': ${error.message}`);
