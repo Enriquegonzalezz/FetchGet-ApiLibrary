@@ -2,6 +2,8 @@
   import Header from '../components/header.vue';
   import { ref } from 'vue';
 
+  const fileInputRef = ref(null);
+
   const apiData = ref({
     name: '',
     description: '',
@@ -62,6 +64,10 @@
         preview: '',
         previewFile: null
       };
+      // Limpiar el input de archivo
+      if (fileInputRef.value) {
+        fileInputRef.value.value = '';
+      }
     } catch (e) {
       error.value = 'Error al crear la API: ' + (e.message || e);
       console.error('Error al crear la API:', e);
@@ -242,6 +248,7 @@
                 name="preview"
                 type="file" 
                 @change="handleFileUpload"
+                ref="fileInputRef"
                 class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
               <p v-if="errors.preview" class="text-red-500 text-sm mt-1">El preview es requerido</p>

@@ -98,14 +98,14 @@ class ApisController {
             preview: previewFileName,
             json: req.body.json // Si necesitas parsear, hazlo aquí
         };
-    
+
         const result = validateApi(apiInput);
         if (!result.success) {
             return res.status(400).json({ error: result.error.errors });
         }
-    
+
         const api = result.data;
-    
+
         try {
             const result = await ApisModel.store({ api });
             return res.status(201).json({ message: `API ${result} registrada exitosamente` });
